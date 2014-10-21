@@ -1,0 +1,25 @@
+li {
+    font-family: cursive;
+}
+
+img {
+    display: block;
+    height: 400px;
+    width: 300px;
+    margin: auto;
+    border: 2px solid black;
+}
+
+h1 {
+    text-align: center;
+}
+
+#headerParagraph {
+    text-align: center;
+    font: bold;
+    font-size: 30px;
+}
+
+#rottweiler {
+    border: 2px solid black;
+}
