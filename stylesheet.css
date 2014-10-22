@@ -1,5 +1,6 @@
 li {
     font-family: cursive;
+    font-size: 40px;
 }
 
 img {
@@ -8,10 +9,22 @@ img {
     width: 300px;
     margin: auto;
     border: 2px solid black;
+    margin-bottom: 40px;
+    margin-top: 20px;
+}
+
+#headerPicture {
+    display: block;
+    height: 300px;
+    width: 600px;
+    margin: auto;
+    border: 2px solid black;
+    margin-bottom: 40px;
 }
 
 h1 {
     text-align: center;
+    font-size: 50px;
 }
 
 #headerParagraph {
@@ -20,6 +33,7 @@ h1 {
     font-size: 30px;
 }
 
-#rottweiler {
-    border: 2px solid black;
+
+body {
+    background-color: darkgreen;
 }
