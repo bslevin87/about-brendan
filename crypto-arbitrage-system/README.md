@@ -175,7 +175,16 @@ trading:
 
 ### Risk Management
 
-Edit `config/risk.yaml`:
+The system includes a comprehensive multi-layer risk management system that protects capital through:
+- Pre-execution validation
+- Position and exposure limits
+- P&L monitoring and loss limits
+- Circuit breakers (auto-halt on errors)
+- Emergency kill switch
+
+#### Risk Profiles
+
+Edit `config/risk.yaml` to configure risk limits:
 
 ```yaml
 risk:
@@ -183,13 +192,95 @@ risk:
 
   profiles:
     conservative:
-      max_position_size_percent: 10
-      max_daily_loss_percent: 2
-      min_confidence_score: 0.85
+      max_position_size_percent: 10      # 10% of capital per position
+      max_daily_loss_percent: 2          # Halt if lose 2% in a day
+      min_confidence_score: 0.85         # Only trade high-confidence opportunities
 
   circuit_breakers:
-    max_consecutive_losses: 5
-    max_daily_loss_usd: 500
+    max_consecutive_losses: 5            # Halt after 5 losses in a row
+    pause_duration_minutes: 15          # Pause trading for 15 minutes
+```
+
+#### Using the Risk Manager
+
+```python
+from src.risk.manager import RiskManager
+from src.models.opportunity import ArbitrageOpportunity
+
+# Initialize risk manager
+config = ConfigManager()
+risk_manager = RiskManager(config)
+
+# Validate trade before execution
+opportunity = ArbitrageOpportunity(...)
+balances = {"Kraken": {"USD": Decimal("5000")}}
+
+result = risk_manager.validate_trade(opportunity, balances)
+
+if result.passed:
+    # Execute trade
+    print("✅ Trade validated - executing")
+else:
+    # Reject trade
+    print(f"❌ Trade rejected: {result.reason}")
+    print(f"Risk level: {result.risk_level}")
+
+# Record trade outcome
+risk_manager.record_trade_outcome(
+    position_id="pos1",
+    pnl_usd=Decimal("100"),
+    trade_details={"symbol": "BTC/USD"}
+)
+
+# Check risk status
+status = risk_manager.get_status()
+print(f"Trading State: {status['trading_state']}")
+print(f"Daily P&L: ${status['pnl']['daily_pnl_usd']}")
+print(f"Total Positions: {status['positions']['total_count']}")
+```
+
+#### Emergency Controls
+
+```python
+# Activate kill switch (immediate halt)
+risk_manager.activate_kill_switch("Manual intervention required")
+
+# Check kill switch status
+if risk_manager.emergency.is_kill_switch_active():
+    print("🚨 Kill switch is ACTIVE - trading halted")
+
+# Deactivate kill switch
+risk_manager.deactivate_kill_switch()
+
+# Manually reset circuit breaker
+risk_manager.reset_circuit_breaker()
+```
+
+#### Risk Management Demo
+
+```bash
+# Run the risk management demo
+python examples/risk_management_demo.py
+```
+
+This demonstrates:
+- Multi-layer validation
+- Position tracking
+- P&L monitoring
+- Circuit breakers
+- Kill switch
+- Trading state management
+
+#### Testing
+
+```bash
+# Run risk management tests (50 tests)
+pytest tests/risk/ -v
+
+# Test specific components
+pytest tests/risk/test_validators.py -v
+pytest tests/risk/test_circuit_breaker.py -v
+pytest tests/risk/test_manager.py -v
 ```
 
 ### Compliance Settings
