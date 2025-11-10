@@ -75,7 +75,7 @@ class Opportunity(Base):
     # Additional data
     confidence_score: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 4))
     risk_score: Mapped[Optional[Decimal]] = mapped_column(Numeric(5, 4))
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON)
+    extra_data: Mapped[Optional[dict]] = mapped_column(JSON)
 
     # Relationships
     trades: Mapped[list["Trade"]] = relationship(
@@ -138,7 +138,7 @@ class Trade(Base):
     # Additional data
     slippage_percent: Mapped[Optional[Decimal]] = mapped_column(Numeric(10, 4))
     execution_time_ms: Mapped[Optional[int]] = mapped_column()
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON)
+    extra_data: Mapped[Optional[dict]] = mapped_column(JSON)
 
     # Relationships
     opportunity: Mapped[Optional["Opportunity"]] = relationship(
@@ -192,7 +192,7 @@ class Position(Base):
     realized_pnl_usd: Mapped[Optional[Decimal]] = mapped_column(Numeric(20, 2))
 
     # Additional data
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON)
+    extra_data: Mapped[Optional[dict]] = mapped_column(JSON)
 
     __table_args__ = (
         Index("idx_position_exchange_asset", "exchange", "asset", "status"),
@@ -229,7 +229,7 @@ class Balance(Base):
     )
 
     # Additional data
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON)
+    extra_data: Mapped[Optional[dict]] = mapped_column(JSON)
 
     __table_args__ = (
         Index("idx_balance_exchange_asset", "exchange", "asset", unique=True),
@@ -329,7 +329,7 @@ class TaxLot(Base):
     tax_year: Mapped[int] = mapped_column(index=True)
 
     # Additional data
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON)
+    extra_data: Mapped[Optional[dict]] = mapped_column(JSON)
 
     # Relationships
     trade: Mapped[Optional["Trade"]] = relationship("Trade", back_populates="tax_lots")
@@ -366,7 +366,7 @@ class SystemMetric(Base):
     unit: Mapped[str] = mapped_column(String(20))
 
     # Additional data
-    metadata: Mapped[Optional[dict]] = mapped_column(JSON)
+    extra_data: Mapped[Optional[dict]] = mapped_column(JSON)
 
     __table_args__ = (
         Index("idx_metric_type_component", "metric_type", "component", "timestamp"),

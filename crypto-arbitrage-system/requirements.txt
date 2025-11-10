@@ -1,13 +1,14 @@
 # Core dependencies
 python-dotenv==1.0.0
-pydantic==2.5.0
+pydantic==2.10.5
 pyyaml==6.0.1
 
 # Database
-sqlalchemy==2.0.23
-asyncpg==0.29.0
+sqlalchemy==2.0.36
+asyncpg==0.30.0
 aiosqlite==0.19.0
 alembic==1.13.0
+greenlet==3.1.1
 
 # Redis
 redis==5.0.1

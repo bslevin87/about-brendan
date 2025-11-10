@@ -83,7 +83,6 @@ class KrakenExchange(BaseExchange):
             self._ws_manager = WebSocketManager(
                 url=self.ws_url,
                 name=self.name,
-                on_message=self._handle_ws_message,
             )
 
     # ==================== Connection Management ====================
