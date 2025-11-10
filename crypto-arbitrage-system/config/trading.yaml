@@ -1,0 +1,72 @@
+trading:
+  mode: "dry_run"  # Options: dry_run, paper, live
+
+  capital_allocation:
+    total_capital_usd: 10000
+    max_capital_per_exchange: 0.25  # 25% max per exchange
+    reserve_buffer: 0.10  # Keep 10% in reserve
+    rebalance_threshold: 0.15  # Rebalance if allocation drifts by 15%
+    rebalance_frequency_hours: 24
+
+  profit_thresholds:
+    min_profit_percent: 0.30  # Minimum 0.3% profit after fees
+    min_profit_usd: 5.00  # Minimum $5 absolute profit
+    optimal_profit_percent: 0.50  # Target profit threshold
+    max_slippage_percent: 0.10  # Maximum acceptable slippage
+
+  execution:
+    max_execution_time_seconds: 10
+    order_timeout_seconds: 5
+    max_retries: 3
+    retry_delay_seconds: 1
+    use_limit_orders: true
+    limit_order_offset_percent: 0.05  # 0.05% from mid price
+    cancel_unfilled_after_seconds: 3
+
+  arbitrage_types:
+    cross_exchange:
+      enabled: true
+      min_price_difference_percent: 0.35
+      max_exposure_usd: 5000
+
+    triangle:
+      enabled: true
+      min_profit_percent: 0.40
+      max_exposure_usd: 3000
+      supported_triangles:
+        - ["BTC/USD", "ETH/BTC", "ETH/USD"]
+        - ["BTC/USD", "SOL/BTC", "SOL/USD"]
+
+    statistical:
+      enabled: false  # Phase 2 feature
+      lookback_period_minutes: 60
+      zscore_threshold: 2.0
+
+  position_management:
+    auto_close_positions: true
+    max_position_age_minutes: 30
+    stop_loss_percent: 2.0
+    take_profit_percent: 1.0
+    trailing_stop_enabled: false
+
+  pairs:
+    primary:
+      - "BTC/USD"
+      - "ETH/USD"
+    secondary:
+      - "SOL/USD"
+      - "ADA/USD"
+      - "DOT/USD"
+    cross:
+      - "BTC/ETH"
+
+  timing:
+    check_frequency_seconds: 1
+    cooldown_between_trades_seconds: 5
+    max_trades_per_minute: 10
+    max_trades_per_hour: 100
+    trading_hours:
+      enabled: false  # Trade 24/7
+      start: "00:00"
+      end: "23:59"
+      timezone: "UTC"
