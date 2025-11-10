@@ -567,14 +567,17 @@ pytest tests/test_config.py::TestConfigManager::test_config_loading -v
 - [x] Exchange adapters (Kraken, Binance.US, etc.)
 - [x] WebSocket connections for real-time data
 - [x] Rate limiting and retry logic
-- [ ] Order book aggregation
+- [x] Order book aggregation (Component #3)
+- [x] Market data cache (Redis)
 - [ ] Remaining exchange adapters (Binance.US, Crypto.com, etc.)
 
-### Phase 3: Strategy Implementation
-- [ ] Cross-exchange arbitrage detector
-- [ ] Triangle arbitrage detector
-- [ ] Signal generation and validation
-- [ ] Profit calculation with fees
+### Phase 3: Strategy Implementation (Component #3)
+- [x] Cross-exchange arbitrage detector
+- [x] Triangle arbitrage detector
+- [x] Opportunity models and scoring
+- [x] Profit calculation with fees
+- [ ] Signal validation pipeline
+- [ ] Advanced statistical arbitrage
 
 ### Phase 4: Execution Engine
 - [ ] Order placement and management
