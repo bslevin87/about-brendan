@@ -230,6 +230,122 @@ risk_profile = config.get_active_risk_profile()
 print(f"Max position size: {risk_profile.max_position_size_percent}%")
 ```
 
+### Exchange Integration
+
+The system provides a unified interface for interacting with cryptocurrency exchanges. All exchanges implement the `BaseExchange` abstract class, ensuring consistent APIs across platforms.
+
+#### Using Exchange Adapters
+
+```python
+from src.exchanges.adapters.kraken import KrakenExchange
+from src.exchanges.rate_limiter import RateLimiter
+
+# Configure rate limiter (prevents API bans)
+rate_limiter = RateLimiter(
+    requests_per_second=5,  # Max sustained rate
+    burst_size=10,          # Allow bursts
+    name="kraken"
+)
+
+# Initialize exchange
+config = {
+    "name": "Kraken",
+    "api_url": "https://api.kraken.com",
+    "ws_url": "wss://ws.kraken.com",
+}
+exchange = KrakenExchange(config, rate_limiter)
+
+# Connect to exchange
+await exchange.connect()
+
+# Fetch market data
+ticker = await exchange.fetch_ticker("BTC/USD")
+print(f"Best bid: ${ticker.bid:,.2f}")
+print(f"Best ask: ${ticker.ask:,.2f}")
+print(f"Spread: {ticker.spread_percent:.3f}%")
+
+# Fetch order book
+order_book = await exchange.fetch_order_book("BTC/USD", depth=20)
+print(f"Top bid: {order_book.best_bid}")
+print(f"Top ask: {order_book.best_ask}")
+
+# Check account balances
+balances = await exchange.fetch_balances()
+for balance in balances:
+    print(f"{balance.currency}: {balance.available} available")
+
+# Create order (dry run - doesn't execute)
+order = await exchange.create_order(
+    symbol="BTC/USD",
+    side="buy",
+    order_type="limit",
+    quantity=Decimal("0.1"),
+    price=Decimal("50000"),
+    dry_run=True  # Set to False for live trading
+)
+print(f"Order {order.order_id} created: {order.status}")
+
+# Subscribe to WebSocket feeds (real-time data)
+await exchange.subscribe_order_book("BTC/USD")
+await exchange.subscribe_trades("BTC/USD")
+
+# Clean up
+await exchange.disconnect()
+```
+
+#### Implemented Features
+
+**Data Models** (`src/exchanges/models.py`):
+- `OrderBook`: Normalized order book with bid/ask spreads
+- `Ticker`: Current market prices and 24h statistics
+- `Trade`: Individual trade records
+- `Order`: Order tracking with fill status
+- `Balance`: Account balance tracking
+
+**Rate Limiting** (`src/exchanges/rate_limiter.py`):
+- Token bucket algorithm for API rate limiting
+- Configurable burst capacity
+- Statistics tracking
+- Async-safe with proper locking
+
+**WebSocket Manager** (`src/exchanges/websocket_manager.py`):
+- Automatic reconnection with exponential backoff
+- Heartbeat monitoring
+- Message queue with async iteration
+- Subscription management
+
+**Kraken Adapter** (`src/exchanges/adapters/kraken.py`):
+- Complete REST API implementation
+- HMAC-SHA512 authentication
+- Symbol normalization (XXBTZUSD ↔ BTC/USD)
+- WebSocket real-time data
+- Comprehensive error handling
+
+#### Running the Demo
+
+```bash
+# Run the exchange integration demo
+python examples/exchange_demo.py
+```
+
+This demonstrates:
+- Mock exchange for testing
+- Kraken adapter usage
+- Rate limiter functionality
+- Symbol normalization
+
+#### Testing
+
+All exchange components have comprehensive test coverage:
+
+```bash
+# Run exchange tests (26 tests)
+pytest tests/test_exchanges.py -v
+
+# Run with coverage
+pytest tests/test_exchanges.py --cov=src/exchanges
+```
+
 ### Logging Examples
 
 ```python
@@ -448,10 +564,11 @@ pytest tests/test_config.py::TestConfigManager::test_config_loading -v
 - ✅ Test suite
 
 ### Phase 2: Exchange Integration
-- [ ] Exchange adapters (Kraken, Binance.US, etc.)
-- [ ] WebSocket connections for real-time data
+- [x] Exchange adapters (Kraken, Binance.US, etc.)
+- [x] WebSocket connections for real-time data
+- [x] Rate limiting and retry logic
 - [ ] Order book aggregation
-- [ ] Rate limiting and retry logic
+- [ ] Remaining exchange adapters (Binance.US, Crypto.com, etc.)
 
 ### Phase 3: Strategy Implementation
 - [ ] Cross-exchange arbitrage detector
