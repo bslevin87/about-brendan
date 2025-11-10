@@ -283,6 +283,338 @@ pytest tests/risk/test_circuit_breaker.py -v
 pytest tests/risk/test_manager.py -v
 ```
 
+### Execution Engine
+
+The execution engine coordinates order placement across exchanges for arbitrage opportunities. It integrates with the risk management system and provides comprehensive safety controls.
+
+#### Architecture
+
+The execution engine consists of 6 integrated components:
+
+1. **Execution Models** (`src/execution/models.py`): Core data structures
+   - `ExecutionState`: Lifecycle tracking (PENDING → VALIDATING → EXECUTING → COMPLETED)
+   - `OrderStatus`: Individual order status tracking
+   - `ExecutionOrder`: Single order with fill tracking
+   - `ExecutionPlan`: Complete multi-leg execution plan
+   - `ExecutionResult`: Result summary with P&L
+
+2. **Balance Manager** (`src/execution/balance_manager.py`): Capital tracking
+   - Real-time balance tracking across exchanges
+   - Balance reservation (prevents double-spending)
+   - Automatic balance refresh
+   - Available vs reserved balance separation
+
+3. **Order Manager** (`src/execution/order_manager.py`): Order placement
+   - Retry logic with exponential backoff (using tenacity)
+   - Order status polling
+   - Fill tracking and partial fill handling
+   - Comprehensive error handling
+
+4. **Multi-Leg Coordinator** (`src/execution/coordinator.py`): Atomic execution
+   - Concurrent order placement (asyncio.gather)
+   - All-or-nothing execution (rollback on failure)
+   - Order synchronization across exchanges
+   - Partial fill protection
+
+5. **Reconciliation Engine** (`src/execution/reconciliation.py`): P&L verification
+   - Expected vs actual profit comparison
+   - Fee validation
+   - Slippage detection
+   - Variance alerts (>10% triggers warning)
+
+6. **Execution Engine** (`src/execution/engine.py`): Main orchestrator
+   - Integrates all components
+   - Risk validation integration
+   - Execution lifecycle management
+   - Statistics and monitoring
+
+#### Using the Execution Engine
+
+```python
+from src.execution.engine import ExecutionEngine
+from src.risk.manager import RiskManager
+from src.models.opportunity import ArbitrageOpportunity
+
+# Initialize execution engine
+config = ConfigManager()
+risk_manager = RiskManager(config)
+
+# Dictionary of connected exchanges
+exchanges = {
+    "Kraken": kraken_exchange,
+    "Coinbase Advanced": coinbase_exchange,
+}
+
+engine = ExecutionEngine(exchanges, risk_manager, config)
+await engine.initialize()
+
+# Create arbitrage opportunity
+opportunity = ArbitrageOpportunity(
+    strategy="cross_exchange",
+    buy_exchange="Kraken",
+    sell_exchange="Coinbase Advanced",
+    symbol="BTC/USD",
+    buy_price=Decimal("50000"),
+    sell_price=Decimal("50250"),
+    max_quantity=Decimal("0.1"),
+    net_profit_usd=Decimal("200"),
+    confidence_score=Decimal("0.85"),
+)
+
+# Execute in DRY-RUN mode (safe - no real trades)
+result = await engine.execute_opportunity(opportunity, dry_run=True)
+
+if result.success:
+    print(f"✅ Execution successful")
+    print(f"Execution ID: {result.execution_id}")
+    print(f"Orders filled: {result.orders_filled}/{result.total_orders}")
+    print(f"Profit: ${result.profit_usd}")
+else:
+    print(f"❌ Execution failed: {result.error_message}")
+    print(f"State: {result.state.value}")
+
+# Get detailed execution status
+plan = engine.get_execution_status(result.execution_id)
+if plan:
+    print(f"State: {plan.state.value}")
+    print(f"Orders: {len(plan.orders)}")
+    for order in plan.orders:
+        print(f"  {order.side.upper()} on {order.exchange}: {order.status.value}")
+
+# Get engine statistics
+stats = engine.get_stats()
+print(f"Total executions: {stats['total_executions']}")
+print(f"Success rate: {stats['success_rate']:.1f}%")
+```
+
+#### Dry-Run vs Live Mode
+
+**CRITICAL**: The execution engine defaults to `dry_run=True` for safety. Always test thoroughly in dry-run mode before enabling live trading.
+
+**Dry-Run Mode** (Default - Recommended):
+```python
+# Safe: Simulates execution without placing real orders
+result = await engine.execute_opportunity(opportunity, dry_run=True)
+```
+
+**Live Mode** (Requires explicit opt-in):
+```python
+# DANGER: Places real orders with real money
+result = await engine.execute_opportunity(opportunity, dry_run=False)
+```
+
+**Best Practices:**
+1. Always start with dry-run mode
+2. Monitor dry-run executions for 24-48 hours
+3. Verify risk controls are working properly
+4. Start with small position sizes when going live
+5. Monitor live executions closely
+6. Keep kill switch accessible
+
+#### Execution Lifecycle
+
+```
+PENDING
+  ↓
+VALIDATING (risk manager checks 8 layers)
+  ↓
+  ├─ REJECTED (failed validation) → END
+  ↓
+APPROVED (passed validation)
+  ↓
+EXECUTING (placing orders)
+  ↓
+  ├─ FAILED (order placement failed) → ROLLING_BACK → ROLLED_BACK → END
+  ├─ PARTIALLY_FILLED (some orders filled) → ROLLING_BACK → ROLLED_BACK → END
+  ↓
+COMPLETED (all orders filled) → Reconciliation → END
+```
+
+#### Risk Integration
+
+The execution engine integrates with the risk management system at multiple points:
+
+```python
+# Execution automatically validates through risk manager
+result = await engine.execute_opportunity(opportunity, dry_run=True)
+
+# Behind the scenes:
+# 1. Risk manager validates opportunity (8 layers)
+# 2. Balance manager reserves capital
+# 3. Orders placed only if validation passes
+# 4. Position tracker updated on fills
+# 5. P&L tracker records outcome
+# 6. Circuit breaker monitors errors
+
+# If risk validation fails:
+if not result.success and result.state == ExecutionState.REJECTED:
+    print(f"Blocked by risk manager: {result.error_message}")
+```
+
+#### Balance Management
+
+```python
+# Balances are automatically managed
+# Before execution: capital is reserved
+# After execution: capital is released
+
+# Check available balances
+stats = engine.get_stats()
+balance_stats = stats.get('balance_stats', {})
+print(f"Available USD: ${balance_stats['total_available_usd']:,.2f}")
+print(f"Reserved USD: ${balance_stats['total_reserved_usd']:,.2f}")
+
+# Manual balance refresh (optional)
+await engine.balance_manager.refresh_balances()
+```
+
+#### Error Handling
+
+The execution engine handles multiple failure scenarios:
+
+1. **Risk Validation Failure**: Trade rejected before execution
+2. **Insufficient Balance**: Trade blocked by balance manager
+3. **Order Placement Failure**: Automatic retry with backoff (3 attempts)
+4. **Partial Fill**: Automatic rollback (cancel unfilled orders)
+5. **Network Errors**: Retry with exponential backoff
+6. **Exchange Errors**: Logged and reported
+
+```python
+# All errors are captured in the result
+result = await engine.execute_opportunity(opportunity, dry_run=True)
+
+if not result.success:
+    print(f"Execution failed:")
+    print(f"  State: {result.state.value}")
+    print(f"  Error: {result.error_message}")
+    print(f"  Orders filled: {result.orders_filled}/{result.total_orders}")
+```
+
+#### Execution Demo
+
+```bash
+# Run the execution engine demo (DRY-RUN mode)
+python examples/execution_demo.py
+```
+
+This demonstrates:
+- Creating execution plans
+- Risk validation integration
+- Dry-run execution (safe)
+- Order tracking
+- Reconciliation
+- Error handling
+- Statistics tracking
+
+**Demo Output:**
+```
+=======================================================================
+  EXECUTION ENGINE DEMONSTRATION
+=======================================================================
+
+⚠️  Running in DRY-RUN mode (no real trades)
+
+1. Initializing Exchanges (Mock Mode)
+----------------------------------------------------------------------
+   ✅ Kraken (mock) initialized
+   ✅ Coinbase Advanced (mock) initialized
+
+2. Initializing Execution Engine
+----------------------------------------------------------------------
+   ✅ Execution engine initialized
+
+3. Creating Arbitrage Opportunity
+----------------------------------------------------------------------
+   Strategy: cross_exchange
+   Buy:  Kraken @ $50,000.00
+   Sell: Coinbase Advanced @ $50,250.00
+   Expected Profit: $200.00 (0.4%)
+
+4. Executing Opportunity (DRY-RUN)
+----------------------------------------------------------------------
+   ✅ EXECUTION SUCCESSFUL
+   Orders Filled: 2/2
+   Actual Profit: $200.00
+
+Key Takeaways:
+  ✅ Execution engine coordinates multi-leg trades
+  ✅ Risk validation integrated (8-layer safety)
+  ✅ DRY-RUN mode for safe testing
+  ✅ Order tracking and reconciliation
+  ✅ Balance management across exchanges
+  ✅ Comprehensive error handling
+
+  🔒 SAFETY FIRST: Always test with dry-run before live trading
+```
+
+#### Testing
+
+```bash
+# Run execution engine tests (8 tests)
+pytest tests/execution/ -v
+
+# Test specific components
+pytest tests/execution/test_engine.py -v
+pytest tests/execution/test_balance_manager.py -v
+pytest tests/execution/test_order_manager.py -v
+```
+
+#### Troubleshooting
+
+**Execution rejected by risk manager:**
+```python
+# Check risk validation result
+result = await engine.execute_opportunity(opportunity, dry_run=True)
+if result.state == ExecutionState.REJECTED:
+    print(f"Risk rejection: {result.error_message}")
+
+# Common causes:
+# - Insufficient balance
+# - Profit below minimum threshold
+# - Confidence score too low
+# - Risk score too high
+# - Circuit breaker open
+# - Kill switch active
+```
+
+**Balance reservation fails:**
+```python
+# Check available balances
+stats = engine.get_stats()
+balance_stats = stats['balance_stats']
+print(f"Available: ${balance_stats['total_available_usd']}")
+print(f"Reserved: ${balance_stats['total_reserved_usd']}")
+
+# Refresh balances from exchanges
+await engine.balance_manager.refresh_balances()
+```
+
+**Orders not filling:**
+```python
+# Check order status
+plan = engine.get_execution_status(execution_id)
+for order in plan.orders:
+    print(f"{order.exchange} {order.side}: {order.status.value}")
+    if order.last_error:
+        print(f"  Error: {order.last_error}")
+    print(f"  Attempts: {order.attempt_count}")
+```
+
+**High profit variance after execution:**
+```python
+# Reconciliation flags >10% variance
+# Common causes:
+# - Slippage (price moved during execution)
+# - Higher fees than estimated
+# - Partial fills at different prices
+
+# Check reconciliation details
+plan = engine.get_execution_status(execution_id)
+print(f"Expected profit: ${plan.expected_profit_usd}")
+print(f"Actual profit: ${plan.actual_profit_usd}")
+print(f"Total fees: ${plan.total_fees_usd}")
+```
+
 ### Compliance Settings
 
 Edit `config/compliance.yaml`:
@@ -710,15 +1042,22 @@ pytest tests/test_config.py::TestConfigManager::test_config_loading -v
 - [ ] Signal validation pipeline
 - [ ] Advanced statistical arbitrage
 
-### Phase 4: Execution Engine
-- [ ] Order placement and management
-- [ ] Multi-leg execution coordination
-- [ ] Slippage monitoring
-- [ ] Position management
+### Phase 4: Execution Engine (Component #6)
+- [x] Order placement and management
+- [x] Multi-leg execution coordination
+- [x] Balance management across exchanges
+- [x] Trade reconciliation
+- [x] Atomic execution with rollback
+- [x] Retry logic with exponential backoff
+- [x] Dry-run mode for safe testing
 
-### Phase 5: Risk & Compliance
-- [ ] Real-time risk monitoring
-- [ ] Circuit breaker implementation
+### Phase 5: Risk & Compliance (Component #5)
+- [x] Multi-layer risk validation (8 independent checks)
+- [x] Real-time position tracking
+- [x] P&L monitoring (daily/hourly limits)
+- [x] Circuit breaker implementation (auto-halt)
+- [x] Emergency kill switch
+- [x] Trading state management
 - [ ] Tax lot allocation
 - [ ] Reporting dashboards
 
