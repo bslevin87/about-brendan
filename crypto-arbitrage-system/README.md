@@ -321,6 +321,46 @@ await exchange.disconnect()
 - WebSocket real-time data
 - Comprehensive error handling
 
+**Coinbase Advanced Adapter** (`src/exchanges/adapters/coinbase_advanced.py`):
+- Complete REST API implementation
+- JWT ES256 authentication
+- Symbol normalization (BTC-USD ↔ BTC/USD)
+- WebSocket level2 orderbook feeds
+- Comprehensive error handling
+
+#### Setting Up Coinbase Advanced API
+
+1. **Create API Credentials:**
+   - Log in to [Coinbase Advanced Trade](https://www.coinbase.com/advanced-trade)
+   - Go to Settings → API
+   - Click "Create API Key"
+   - Download your API key JSON file containing:
+     - `name`: API key name (your key ID)
+     - `privateKey`: ECDSA private key (PEM format)
+
+2. **Configure Environment Variables:**
+   ```bash
+   # Add to your .env file
+   COINBASE_ADVANCED_API_KEY="your_key_name"
+   COINBASE_ADVANCED_API_SECRET="-----BEGIN EC PRIVATE KEY-----
+   MHcCAQEEIBKH...your_private_key...
+   -----END EC PRIVATE KEY-----"
+   ```
+
+   **Important**: The API secret must be the full ECDSA private key in PEM format, including the BEGIN/END markers.
+
+3. **Verify Configuration:**
+   ```bash
+   # Test Coinbase connection
+   python -c "from src.exchanges.adapters.coinbase_advanced import CoinbaseAdvancedExchange; print('Coinbase adapter loaded successfully')"
+   ```
+
+4. **Cross-Exchange Monitoring:**
+   ```bash
+   # Monitor arbitrage opportunities between Kraken and Coinbase
+   python examples/cross_exchange_monitor.py
+   ```
+
 #### Running the Demo
 
 ```bash

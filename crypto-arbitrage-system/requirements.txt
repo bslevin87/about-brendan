@@ -21,6 +21,13 @@ structlog==23.2.0
 httpx==0.25.2
 aiohttp==3.9.1
 
+# Authentication
+PyJWT==2.8.0
+cryptography==42.0.0
+
+# Retry logic
+tenacity==8.2.3
+
 # WebSocket (for future real-time data)
 websockets==12.0
 

@@ -168,7 +168,7 @@ exchanges:
 
   coinbase_advanced:
     name: "Coinbase Advanced"
-    api_url: "https://api.coinbase.com/api/v3"
+    api_url: "https://api.coinbase.com"
     ws_url: "wss://advanced-trade-ws.coinbase.com"
     rate_limit_requests_per_second: 10
     supported_pairs:
