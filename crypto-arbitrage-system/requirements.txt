@@ -50,5 +50,13 @@ ipdb==0.13.13
 # Monitoring (for future use)
 prometheus-client==0.19.0
 
+# Data structures and analysis
+sortedcontainers==2.4.0
+pandas==2.1.4
+numpy==1.26.2
+
+# CLI and UI
+rich==13.7.0
+
 # Utilities
 python-dateutil==2.8.2
