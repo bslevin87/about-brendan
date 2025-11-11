@@ -42,7 +42,7 @@ async def exchanges(config, logger):
 
     # Kraken
     kraken = KrakenExchange(
-        config=config.exchanges["kraken"],
+        config=config.exchanges.kraken,
         logger=logger,
         rate_limiter=RateLimiter(15, 20, "kraken")
     )
@@ -51,7 +51,7 @@ async def exchanges(config, logger):
 
     # Coinbase Advanced
     coinbase = CoinbaseAdvancedExchange(
-        config=config.exchanges["coinbase_advanced"],
+        config=config.exchanges.coinbase_advanced,
         logger=logger,
         rate_limiter=RateLimiter(10, 15, "coinbase")
     )
@@ -147,8 +147,8 @@ class TestFullPipeline:
     async def test_configuration_loads(self, config):
         """Test that configuration loads correctly"""
         assert config is not None
-        assert "kraken" in config.exchanges
-        assert "coinbase_advanced" in config.exchanges
+        assert hasattr(config.exchanges, 'kraken')
+        assert hasattr(config.exchanges, 'coinbase_advanced')
         assert hasattr(config, 'risk')
         assert hasattr(config, 'trading')
         assert config.trading.capital_allocation.total_capital_usd > 0

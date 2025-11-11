@@ -42,7 +42,7 @@ async def full_system(config, logger):
     exchanges = {}
 
     kraken = KrakenExchange(
-        config=config.exchanges["kraken"],
+        config=config.exchanges.kraken,
         logger=logger,
         rate_limiter=RateLimiter(15, 20, "kraken")
     )
@@ -50,7 +50,7 @@ async def full_system(config, logger):
     exchanges["Kraken"] = kraken
 
     coinbase = CoinbaseAdvancedExchange(
-        config=config.exchanges["coinbase_advanced"],
+        config=config.exchanges.coinbase_advanced,
         logger=logger,
         rate_limiter=RateLimiter(10, 15, "coinbase")
     )

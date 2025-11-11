@@ -148,9 +148,9 @@ class IntegrationTest:
             self.logger = get_logger(__name__)
 
             # Verify exchanges configured
-            if "kraken" not in self.config.exchanges:
+            if not hasattr(self.config.exchanges, 'kraken'):
                 raise AssertionError("Kraken not configured in config/exchanges.yaml")
-            if "coinbase_advanced" not in self.config.exchanges:
+            if not hasattr(self.config.exchanges, 'coinbase_advanced'):
                 raise AssertionError("Coinbase Advanced not configured in config/exchanges.yaml")
 
             # Verify risk settings
@@ -181,7 +181,7 @@ class IntegrationTest:
         try:
             # Test Kraken
             kraken_limiter = RateLimiter(requests_per_second=15, burst_size=20, name="kraken")
-            kraken_config = self.config.exchanges["kraken"]
+            kraken_config = self.config.exchanges.kraken
 
             self.exchanges["Kraken"] = KrakenExchange(
                 config=kraken_config,
@@ -200,7 +200,7 @@ class IntegrationTest:
 
             # Test Coinbase Advanced
             coinbase_limiter = RateLimiter(requests_per_second=10, burst_size=15, name="coinbase")
-            coinbase_config = self.config.exchanges["coinbase_advanced"]
+            coinbase_config = self.config.exchanges.coinbase_advanced
 
             self.exchanges["Coinbase Advanced"] = CoinbaseAdvancedExchange(
                 config=coinbase_config,

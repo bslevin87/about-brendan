@@ -33,7 +33,7 @@ def logger():
 async def kraken_exchange(config, logger):
     """Initialize Kraken exchange"""
     exchange = KrakenExchange(
-        config=config.exchanges["kraken"],
+        config=config.exchanges.kraken,
         logger=logger,
         rate_limiter=RateLimiter(15, 20, "kraken")
     )
@@ -49,7 +49,7 @@ async def kraken_exchange(config, logger):
 async def coinbase_exchange(config, logger):
     """Initialize Coinbase Advanced exchange"""
     exchange = CoinbaseAdvancedExchange(
-        config=config.exchanges["coinbase_advanced"],
+        config=config.exchanges.coinbase_advanced,
         logger=logger,
         rate_limiter=RateLimiter(10, 15, "coinbase")
     )
