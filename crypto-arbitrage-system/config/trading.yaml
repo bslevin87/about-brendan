@@ -1,5 +1,5 @@
 trading:
-  mode: "dry_run"  # Options: dry_run, paper, live
+  mode: "paper"  # Options: dry_run, paper, live
 
   capital_allocation:
     total_capital_usd: 10000
