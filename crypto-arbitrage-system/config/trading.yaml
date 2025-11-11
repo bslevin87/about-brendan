@@ -41,6 +41,7 @@ trading:
       enabled: false  # Phase 2 feature
       lookback_period_minutes: 60
       zscore_threshold: 2.0
+      max_exposure_usd: 2000
 
   position_management:
     auto_close_positions: true

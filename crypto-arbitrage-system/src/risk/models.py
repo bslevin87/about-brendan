@@ -128,10 +128,10 @@ class RiskLimits:
             max_position_size_percent=Decimal(
                 str(profile.max_position_size_percent)
             ),
-            max_positions_per_exchange=profile.get("max_positions_per_exchange", 3),
-            max_total_open_positions=profile.get("max_open_positions", 10),
+            max_positions_per_exchange=getattr(profile, "max_positions_per_exchange", 3),
+            max_total_open_positions=getattr(profile, "max_open_positions", 10),
             max_exposure_per_pair_usd=Decimal(
-                str(profile.get("max_exposure_per_pair_usd", 2000))
+                str(getattr(profile, "max_exposure_per_pair_usd", 2000))
             ),
             max_total_exposure_usd=total_capital,
             # Loss limits

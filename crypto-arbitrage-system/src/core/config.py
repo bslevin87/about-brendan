@@ -50,6 +50,38 @@ class ExchangesConfig(BaseModel):
 
     exchanges: Dict[str, ExchangeConfig]
 
+    def __getattr__(self, name: str) -> ExchangeConfig:
+        """
+        Allow attribute-style access to exchanges.
+
+        This enables clean syntax like config.exchanges.kraken instead of
+        config.exchanges.exchanges["kraken"].
+
+        Args:
+            name: Exchange name (e.g., "kraken", "coinbase_advanced")
+
+        Returns:
+            ExchangeConfig for the requested exchange
+
+        Raises:
+            AttributeError: If exchange is not found in configuration
+        """
+        # First check if it's a regular attribute (to avoid infinite recursion)
+        try:
+            return super().__getattribute__(name)
+        except AttributeError:
+            pass
+
+        # Then check if it's an exchange name
+        exchanges_dict = super().__getattribute__("exchanges")
+        if name in exchanges_dict:
+            return exchanges_dict[name]
+
+        raise AttributeError(
+            f"Exchange '{name}' not found in configuration. "
+            f"Available exchanges: {', '.join(exchanges_dict.keys())}"
+        )
+
     @model_validator(mode="after")
     def validate_exchanges(self) -> "ExchangesConfig":
         """Validate that at least 2 exchanges are enabled."""
@@ -266,19 +298,35 @@ class ConfigManager:
         try:
             # Load exchanges configuration
             exchanges_data = self._load_yaml("exchanges.yaml")
-            self.exchanges = ExchangesConfig(**exchanges_data)
+            # Unwrap the top-level "exchanges" key if present
+            if "exchanges" in exchanges_data and isinstance(exchanges_data["exchanges"], dict):
+                self.exchanges = ExchangesConfig(exchanges=exchanges_data["exchanges"])
+            else:
+                self.exchanges = ExchangesConfig(**exchanges_data)
 
             # Load trading configuration
             trading_data = self._load_yaml("trading.yaml")
-            self.trading = TradingConfig(**trading_data)
+            # Unwrap the top-level "trading" key if present
+            if "trading" in trading_data:
+                self.trading = TradingConfig(**trading_data["trading"])
+            else:
+                self.trading = TradingConfig(**trading_data)
 
             # Load risk configuration
             risk_data = self._load_yaml("risk.yaml")
-            self.risk = RiskConfig(**risk_data)
+            # Unwrap the top-level "risk" key if present
+            if "risk" in risk_data:
+                self.risk = RiskConfig(**risk_data["risk"])
+            else:
+                self.risk = RiskConfig(**risk_data)
 
             # Load compliance configuration
             compliance_data = self._load_yaml("compliance.yaml")
-            self.compliance = ComplianceConfig(**compliance_data)
+            # Unwrap the top-level "compliance" key if present
+            if "compliance" in compliance_data:
+                self.compliance = ComplianceConfig(**compliance_data["compliance"])
+            else:
+                self.compliance = ComplianceConfig(**compliance_data)
 
             # Load environment variables
             self._load_environment_variables()

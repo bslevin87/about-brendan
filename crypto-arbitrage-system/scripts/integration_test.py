@@ -181,11 +181,10 @@ class IntegrationTest:
         try:
             # Test Kraken
             kraken_limiter = RateLimiter(requests_per_second=15, burst_size=20, name="kraken")
-            kraken_config = self.config.exchanges.kraken
+            kraken_config = self.config.exchanges.kraken.model_dump()
 
             self.exchanges["Kraken"] = KrakenExchange(
                 config=kraken_config,
-                logger=self.logger,
                 rate_limiter=kraken_limiter
             )
 
@@ -200,11 +199,10 @@ class IntegrationTest:
 
             # Test Coinbase Advanced
             coinbase_limiter = RateLimiter(requests_per_second=10, burst_size=15, name="coinbase")
-            coinbase_config = self.config.exchanges.coinbase_advanced
+            coinbase_config = self.config.exchanges.coinbase_advanced.model_dump()
 
             self.exchanges["Coinbase Advanced"] = CoinbaseAdvancedExchange(
                 config=coinbase_config,
-                logger=self.logger,
                 rate_limiter=coinbase_limiter
             )
 
@@ -243,7 +241,6 @@ class IntegrationTest:
             self.aggregator = MarketDataAggregator(
                 exchanges=self.exchanges,
                 config=self.config,
-                logger=self.logger,
                 redis_url=self.config.redis_url if hasattr(self.config, 'redis_url') else None
             )
 
@@ -283,7 +280,7 @@ class IntegrationTest:
     async def test_risk_management(self) -> bool:
         """Test 4: Risk management initialization"""
         try:
-            self.risk_manager = RiskManager(config=self.config, logger=self.logger)
+            self.risk_manager = RiskManager(config=self.config)
 
             # Verify components initialized
             if self.risk_manager.position_tracker is None:
@@ -327,8 +324,7 @@ class IntegrationTest:
             self.engine = ExecutionEngine(
                 exchanges=self.exchanges,
                 risk_manager=self.risk_manager,
-                config=self.config,
-                logger=self.logger
+                config=self.config
             )
 
             await self.engine.initialize()
@@ -367,8 +363,7 @@ class IntegrationTest:
         try:
             self.detector = CrossExchangeDetector(
                 aggregator=self.aggregator,
-                config=self.config,
-                logger=self.logger
+                config=self.config
             )
 
             # Detect opportunities
