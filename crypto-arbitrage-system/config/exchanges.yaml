@@ -64,7 +64,7 @@ exchanges:
       SOL: 0.001
       ADA: 1.0
       DOT: 0.01
-    enabled: true
+    enabled: false  # Not yet implemented
     priority: 2
 
   crypto_com:
@@ -98,7 +98,7 @@ exchanges:
       SOL: 0.01
       ADA: 1.0
       DOT: 0.1
-    enabled: true
+    enabled: false  # Not yet implemented
     priority: 3
 
   bitstamp:
@@ -132,7 +132,7 @@ exchanges:
       SOL: 0.05
       ADA: 5.0
       DOT: 0.5
-    enabled: true
+    enabled: false  # Not yet implemented
     priority: 4
 
   gemini:
@@ -163,7 +163,7 @@ exchanges:
       SOL: 0.01
       ADA: 1.0
       DOT: 0.1
-    enabled: true
+    enabled: false  # Not yet implemented
     priority: 5
 
   coinbase_advanced:
@@ -231,5 +231,5 @@ exchanges:
       SOL: 0.01
       ADA: 1.0
       DOT: 0.1
-    enabled: true
+    enabled: false  # Not yet implemented
     priority: 7
