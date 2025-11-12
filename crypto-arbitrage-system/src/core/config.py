@@ -253,6 +253,60 @@ class ConfigManager:
         project_root = current_file.parent.parent.parent
         return project_root / "config"
 
+    @staticmethod
+    def _resolve_file_reference(value: str) -> str:
+        """
+        Resolve file: references in config values.
+
+        If value starts with 'file:', read and return the file contents.
+        Otherwise, return the value unchanged.
+
+        This is useful for storing sensitive multi-line values (like private keys)
+        in separate files rather than in environment variables.
+
+        Args:
+            value: Configuration value (may be a file reference like "file:path/to/key")
+
+        Returns:
+            File contents if file reference, otherwise original value
+
+        Raises:
+            FileNotFoundError: If referenced file doesn't exist
+            ConfigurationError: If file cannot be read
+
+        Example:
+            >>> # .env file contains:
+            >>> # API_SECRET=file:config/private.key
+            >>> secret = ConfigManager._resolve_file_reference("file:config/private.key")
+            >>> # Returns contents of config/private.key
+        """
+        if not value or not isinstance(value, str):
+            return value
+
+        if value.startswith('file:'):
+            file_path = value[5:]  # Remove 'file:' prefix
+
+            # Make relative paths relative to project root
+            if not os.path.isabs(file_path):
+                project_root = Path(__file__).parent.parent.parent
+                file_path = os.path.join(project_root, file_path)
+
+            if not os.path.exists(file_path):
+                raise FileNotFoundError(
+                    f"Config file reference not found: {file_path}"
+                )
+
+            try:
+                with open(file_path, 'r') as f:
+                    return f.read().strip()
+            except Exception as e:
+                raise ConfigurationError(
+                    f"Failed to read file reference: {file_path}",
+                    details={"error": str(e)}
+                )
+
+        return value
+
     def _load_yaml(self, filename: str) -> Dict[str, Any]:
         """
         Load and parse a YAML configuration file.
@@ -362,6 +416,10 @@ class ConfigManager:
 
             api_key = os.getenv(key_name)
             api_secret = os.getenv(secret_name)
+
+            # Resolve file references for API secrets (useful for multi-line private keys)
+            if api_secret:
+                api_secret = self._resolve_file_reference(api_secret)
 
             # Only require keys for enabled exchanges in live mode
             if self.exchanges.exchanges[exchange_name].enabled:
