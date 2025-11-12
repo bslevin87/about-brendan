@@ -4,6 +4,11 @@ Configuration management for the crypto arbitrage system.
 This module provides type-safe configuration management using Pydantic
 models with validation and environment variable support.
 """
+
+# CRITICAL: Load environment variables with file resolution FIRST
+# This must be imported before any code that reads environment variables
+from . import env_loader  # noqa: F401 - Auto-runs load_environment()
+
 import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -15,7 +20,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from src.core.exceptions import ConfigurationError
 
 
-# Load environment variables
+# Load environment variables (redundant but safe - env_loader already did this)
 load_dotenv()
 
 
