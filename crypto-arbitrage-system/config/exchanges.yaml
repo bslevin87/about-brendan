@@ -1,0 +1,235 @@
+exchanges:
+  kraken:
+    name: "Kraken"
+    api_url: "https://api.kraken.com"
+    ws_url: "wss://ws.kraken.com"
+    rate_limit_requests_per_second: 15
+    supported_pairs:
+      - "BTC/USD"
+      - "ETH/USD"
+      - "BTC/ETH"
+      - "USDT/USD"
+      - "SOL/USD"
+      - "ADA/USD"
+      - "DOT/USD"
+    maker_fee: 0.0016
+    taker_fee: 0.0026
+    withdrawal_fee:
+      BTC: 0.00005
+      ETH: 0.0005
+      USD: 5.00
+      USDT: 5.00
+      SOL: 0.01
+      ADA: 0.5
+      DOT: 0.05
+    withdrawal_time_hours: 1
+    min_trade_size:
+      BTC: 0.0001
+      ETH: 0.001
+      USDT: 5.0
+      SOL: 0.01
+      ADA: 1.0
+      DOT: 0.1
+    enabled: true
+    priority: 1
+
+  binance_us:
+    name: "Binance.US"
+    api_url: "https://api.binance.us"
+    ws_url: "wss://stream.binance.us:9443"
+    rate_limit_requests_per_second: 20
+    supported_pairs:
+      - "BTC/USD"
+      - "ETH/USD"
+      - "BTC/ETH"
+      - "USDT/USD"
+      - "SOL/USD"
+      - "ADA/USD"
+      - "DOT/USD"
+    maker_fee: 0.001
+    taker_fee: 0.001
+    withdrawal_fee:
+      BTC: 0.0005
+      ETH: 0.005
+      USD: 15.00
+      USDT: 1.00
+      SOL: 0.02
+      ADA: 1.0
+      DOT: 0.1
+    withdrawal_time_hours: 2
+    min_trade_size:
+      BTC: 0.00001
+      ETH: 0.0001
+      USDT: 10.0
+      SOL: 0.001
+      ADA: 1.0
+      DOT: 0.01
+    enabled: false  # Not yet implemented
+    priority: 2
+
+  crypto_com:
+    name: "Crypto.com"
+    api_url: "https://api.crypto.com/v2"
+    ws_url: "wss://stream.crypto.com/v2/market"
+    rate_limit_requests_per_second: 10
+    supported_pairs:
+      - "BTC/USD"
+      - "ETH/USD"
+      - "BTC/ETH"
+      - "USDT/USD"
+      - "SOL/USD"
+      - "ADA/USD"
+      - "DOT/USD"
+    maker_fee: 0.0004
+    taker_fee: 0.001
+    withdrawal_fee:
+      BTC: 0.0004
+      ETH: 0.004
+      USD: 10.00
+      USDT: 1.00
+      SOL: 0.02
+      ADA: 0.8
+      DOT: 0.08
+    withdrawal_time_hours: 1
+    min_trade_size:
+      BTC: 0.0001
+      ETH: 0.001
+      USDT: 10.0
+      SOL: 0.01
+      ADA: 1.0
+      DOT: 0.1
+    enabled: false  # Not yet implemented
+    priority: 3
+
+  bitstamp:
+    name: "Bitstamp"
+    api_url: "https://www.bitstamp.net/api/v2"
+    ws_url: "wss://ws.bitstamp.net"
+    rate_limit_requests_per_second: 8
+    supported_pairs:
+      - "BTC/USD"
+      - "ETH/USD"
+      - "BTC/ETH"
+      - "USDT/USD"
+      - "SOL/USD"
+      - "ADA/USD"
+      - "DOT/USD"
+    maker_fee: 0.005
+    taker_fee: 0.005
+    withdrawal_fee:
+      BTC: 0.0005
+      ETH: 0.005
+      USD: 0.00
+      USDT: 20.00
+      SOL: 0.02
+      ADA: 1.0
+      DOT: 0.1
+    withdrawal_time_hours: 3
+    min_trade_size:
+      BTC: 0.001
+      ETH: 0.01
+      USDT: 25.0
+      SOL: 0.05
+      ADA: 5.0
+      DOT: 0.5
+    enabled: false  # Not yet implemented
+    priority: 4
+
+  gemini:
+    name: "Gemini"
+    api_url: "https://api.gemini.com"
+    ws_url: "wss://api.gemini.com/v1/marketdata"
+    rate_limit_requests_per_second: 5
+    supported_pairs:
+      - "BTC/USD"
+      - "ETH/USD"
+      - "BTC/ETH"
+      - "SOL/USD"
+      - "ADA/USD"
+      - "DOT/USD"
+    maker_fee: 0.001
+    taker_fee: 0.0035
+    withdrawal_fee:
+      BTC: 0.0
+      ETH: 0.0
+      USD: 0.0
+      SOL: 0.0
+      ADA: 0.0
+      DOT: 0.0
+    withdrawal_time_hours: 2
+    min_trade_size:
+      BTC: 0.00001
+      ETH: 0.0001
+      SOL: 0.01
+      ADA: 1.0
+      DOT: 0.1
+    enabled: false  # Not yet implemented
+    priority: 5
+
+  coinbase_advanced:
+    name: "Coinbase Advanced"
+    api_url: "https://api.coinbase.com"
+    ws_url: "wss://advanced-trade-ws.coinbase.com"
+    rate_limit_requests_per_second: 10
+    supported_pairs:
+      - "BTC/USD"
+      - "ETH/USD"
+      - "BTC/ETH"
+      - "USDT/USD"
+      - "SOL/USD"
+      - "ADA/USD"
+      - "DOT/USD"
+    maker_fee: 0.004
+    taker_fee: 0.006
+    withdrawal_fee:
+      BTC: 0.0
+      ETH: 0.0
+      USD: 0.0
+      USDT: 0.0
+      SOL: 0.0
+      ADA: 0.0
+      DOT: 0.0
+    withdrawal_time_hours: 1
+    min_trade_size:
+      BTC: 0.00001
+      ETH: 0.0001
+      USDT: 1.0
+      SOL: 0.01
+      ADA: 1.0
+      DOT: 0.1
+    enabled: true
+    priority: 6
+
+  okx_us:
+    name: "OKX.US"
+    api_url: "https://www.okx.com"
+    ws_url: "wss://ws.okx.com:8443/ws/v5/public"
+    rate_limit_requests_per_second: 20
+    supported_pairs:
+      - "BTC/USD"
+      - "ETH/USD"
+      - "BTC/ETH"
+      - "USDT/USD"
+      - "SOL/USD"
+      - "ADA/USD"
+      - "DOT/USD"
+    maker_fee: 0.0008
+    taker_fee: 0.001
+    withdrawal_fee:
+      BTC: 0.0004
+      ETH: 0.003
+      USD: 10.00
+      USDT: 1.00
+      SOL: 0.01
+      ADA: 0.5
+      DOT: 0.05
+    withdrawal_time_hours: 1
+    min_trade_size:
+      BTC: 0.00001
+      ETH: 0.0001
+      USDT: 1.0
+      SOL: 0.01
+      ADA: 1.0
+      DOT: 0.1
+    enabled: false  # Not yet implemented
+    priority: 7

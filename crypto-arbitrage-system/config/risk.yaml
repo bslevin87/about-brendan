@@ -1,0 +1,81 @@
+risk:
+  profiles:
+    conservative:
+      max_position_size_percent: 10
+      max_daily_loss_percent: 2
+      max_drawdown_percent: 5
+      min_confidence_score: 0.85
+      max_leverage: 1.0
+      diversification_requirement: 0.3  # Min 30% across different pairs
+
+    moderate:
+      max_position_size_percent: 20
+      max_daily_loss_percent: 5
+      max_drawdown_percent: 10
+      min_confidence_score: 0.75
+      max_leverage: 1.5
+      diversification_requirement: 0.25
+
+    aggressive:
+      max_position_size_percent: 40
+      max_daily_loss_percent: 10
+      max_drawdown_percent: 20
+      min_confidence_score: 0.65
+      max_leverage: 2.0
+      diversification_requirement: 0.20
+
+  active_profile: "conservative"
+
+  circuit_breakers:
+    max_consecutive_losses: 5
+    max_hourly_loss_usd: 100
+    max_daily_loss_usd: 500
+    pause_duration_minutes: 30
+    auto_resume: true
+    escalation_levels:
+      - threshold_usd: 100
+        action: "pause_30min"
+      - threshold_usd: 300
+        action: "pause_2hours"
+      - threshold_usd: 500
+        action: "stop_trading"
+
+  position_limits:
+    max_open_positions: 10
+    max_positions_per_exchange: 3
+    max_exposure_per_pair_usd: 2000
+    max_total_exposure_usd: 9000  # 90% of capital
+    concentration_limits:
+      BTC: 0.40  # Max 40% in BTC
+      ETH: 0.30  # Max 30% in ETH
+      other: 0.30  # Max 30% in other assets
+
+  exchange_risk:
+    max_balance_per_exchange_usd: 2500
+    min_exchange_uptime_percent: 99.0
+    max_withdrawal_delay_hours: 6
+    exchange_health_check_interval_minutes: 5
+    blacklist: []  # Exchanges to avoid
+
+  market_conditions:
+    max_volatility_percent: 10  # Pause if volatility > 10%
+    min_liquidity_usd: 100000  # Minimum order book depth
+    max_spread_percent: 1.0  # Maximum bid-ask spread
+    monitor_flash_crashes: true
+    flash_crash_threshold_percent: 5  # Price drop > 5% in 1 minute
+
+  monitoring:
+    alert_on_breach: true
+    auto_adjust_profile: false  # Manually adjust risk profile
+    risk_report_frequency_hours: 6
+    var_calculation_enabled: true  # Value at Risk
+    var_confidence_level: 0.95
+    var_time_horizon_days: 1
+
+  compliance:
+    max_transaction_size_usd: 10000
+    kyc_required_above_usd: 5000
+    suspicious_activity_threshold_usd: 7500
+    geo_restrictions:
+      blocked_countries: []
+      allowed_countries: ["US"]

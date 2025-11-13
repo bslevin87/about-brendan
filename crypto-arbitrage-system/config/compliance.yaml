@@ -1,0 +1,114 @@
+compliance:
+  tax:
+    cost_basis_method: "FIFO"  # Options: FIFO, LIFO, HIFO, SpecificID
+    tax_lot_tracking: true
+    generate_8949: true  # Generate IRS Form 8949
+    tax_year: 2025
+    jurisdiction: "US"
+    state: "CA"  # Adjust based on location
+    wash_sale_tracking: true
+    wash_sale_period_days: 30
+
+  reporting:
+    audit_trail: true
+    trade_reconstruction: true
+    retention_days: 2555  # 7 years for tax purposes
+    export_formats:
+      - "csv"
+      - "json"
+      - "pdf"
+    generate_daily_reports: true
+    generate_monthly_reports: true
+    generate_annual_reports: true
+    report_storage_path: "reports/"
+
+  record_keeping:
+    required_fields:
+      - "timestamp"
+      - "exchange"
+      - "pair"
+      - "side"
+      - "quantity"
+      - "price"
+      - "fees"
+      - "order_id"
+      - "transaction_id"
+    immutable_records: true
+    backup_frequency_hours: 24
+    backup_retention_days: 365
+
+  kyc_aml:
+    enabled: true
+    max_transaction_size_usd: 10000
+    alert_threshold_usd: 5000
+    suspicious_activity_monitoring: true
+    transaction_pattern_analysis: true
+    velocity_checks:
+      max_daily_volume_usd: 50000
+      max_weekly_volume_usd: 200000
+      max_monthly_volume_usd: 500000
+
+    red_flags:
+      - "rapid_fund_movement"
+      - "round_dollar_amounts"
+      - "structuring_pattern"
+      - "unusual_geographic_activity"
+      - "high_frequency_small_amounts"
+
+    reporting_requirements:
+      ctr_threshold_usd: 10000  # Currency Transaction Report
+      sar_enabled: true  # Suspicious Activity Report
+      fbar_threshold_usd: 10000  # Foreign Bank Account Report
+
+  regulatory:
+    framework: "FinCEN"  # Financial Crimes Enforcement Network
+    bsa_compliance: true  # Bank Secrecy Act
+    aml_program: true  # Anti-Money Laundering
+    cip_enabled: true  # Customer Identification Program
+
+    exchanges_compliance:
+      verify_exchange_registration: true
+      required_licenses:
+        - "MSB"  # Money Services Business
+        - "MTL"  # Money Transmitter License
+      check_sanctions_lists:
+        - "OFAC"  # Office of Foreign Assets Control
+        - "SDN"  # Specially Designated Nationals
+
+  data_protection:
+    encryption_at_rest: true
+    encryption_in_transit: true
+    pii_handling:
+      enabled: false  # No PII in Phase 1
+      anonymization: true
+      data_retention_days: 90
+    gdpr_compliance: false  # US-only for now
+    ccpa_compliance: true  # California Consumer Privacy Act
+
+  legal:
+    terms_accepted: false  # User must accept
+    risk_disclosure: true
+    disclaimer_required: true
+    jurisdiction_acceptance: "US"
+    legal_entity: "Individual"  # Individual, LLC, Corporation
+
+  monitoring:
+    real_time_compliance_check: true
+    flag_suspicious_patterns: true
+    auto_report_violations: false  # Manual review first
+    compliance_dashboard: true
+    alert_recipients:
+      - "compliance@example.com"
+
+  limits:
+    per_trade_usd: 10000
+    per_day_usd: 50000
+    per_month_usd: 500000
+    lifetime_usd: 10000000
+
+  documentation:
+    maintain_sop: true  # Standard Operating Procedures
+    incident_response_plan: true
+    compliance_calendar: true
+    training_required: false
+    audit_frequency_months: 12
